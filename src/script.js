@@ -7540,6 +7540,16 @@ class TeslaCamViewer {
                 if (this.dom.dateFilter) {
                     this.dom.dateFilter.style.display = 'none';
                 }
+            },
+            onDayCreate: (dObj, dStr, fp, dayElem) => {
+                // Highlight dates with available videos in server mode
+                if (availableDates.length > 0) {
+                    const date = dayElem.dateObj;
+                    const dateStr = date.toISOString().split('T')[0];
+                    if (availableDates.includes(dateStr)) {
+                        dayElem.classList.add('has-videos');
+                    }
+                }
             }
         });
         
