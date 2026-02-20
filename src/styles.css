@@ -2235,6 +2235,22 @@ body:not(.dark-theme) .stats-overlay {
     color: var(--text-primary);
 }
 
+/* Inline calendar styles */
+.flatpickr-calendar.inline {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    display: block !important;
+    margin-top: 8px;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Hide the input when inline */
+.date-input-wrapper .flatpickr-input.inline {
+    display: none;
+}
+
 .flatpickr-months .flatpickr-month,
 .flatpickr-weekdays,
 .flatpickr-weekday,
