@@ -73,19 +73,24 @@ const ServerAPI = {
           console.warn('[ServerAPI] Could not parse timestamp from:', folder.name);
         }
         
-        const event = {
-          name: folder.name,
-          type: folderType,
-          startTime: startTime,
-          eventTimestamp: eventTimestamp,
-          files: {},
-          serverMode: true
-        };
-
-        // Group files by camera angle
+        // Group files by minute timestamp to create segments
+        const segmentMap = new Map();
+        
         for (const file of folder.files) {
+          // Extract minute timestamp from filename (e.g., "2024-02-20_17-30-45-front.mp4" -> "2024-02-20_17-30")
+          const fileTimestampMatch = file.name.match(/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})-\d{2}/);
+          const minuteTimestamp = fileTimestampMatch ? fileTimestampMatch[1] : startTime;
+          
+          if (!segmentMap.has(minuteTimestamp)) {
+            segmentMap.set(minuteTimestamp, {
+              timestamp: minuteTimestamp,
+              files: {}
+            });
+          }
+          
+          const segment = segmentMap.get(minuteTimestamp);
           const fileName = file.name.toLowerCase();
-          let camera = 'unknown';
+          let camera = null;
           
           if (fileName.includes('front')) camera = 'front';
           else if (fileName.includes('back')) camera = 'back';
@@ -93,13 +98,27 @@ const ServerAPI = {
           else if (fileName.includes('right_repeater')) camera = 'right';
           else if (fileName.includes('left')) camera = 'leftPillar';
           else if (fileName.includes('right')) camera = 'rightPillar';
-
-          event.files[camera] = {
-            name: file.name,
-            url: file.url,
-            serverPath: file.path
-          };
+          
+          if (camera) {
+            segment.files[camera] = {
+              name: file.name,
+              url: file.url,
+              serverPath: file.path
+            };
+          }
         }
+        
+        const event = {
+          eventId: `${folderType}/${folder.name}`,
+          eventType: folderType,
+          name: folder.name,
+          startTime: startTime,
+          eventTimestamp: eventTimestamp,
+          segments: Array.from(segmentMap.values()).sort((a, b) => 
+            a.timestamp.localeCompare(b.timestamp)
+          ),
+          serverMode: true
+        };
 
         console.log('[ServerAPI] Created event:', event);
         events.push(event);
