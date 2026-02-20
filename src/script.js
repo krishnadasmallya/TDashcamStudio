@@ -2258,7 +2258,11 @@ class VideoListComponent {
     }
 
     createVideoCard(event) {
-        if (!event || !event.segments || event.segments.length === 0) return null;
+        console.log('[VideoCard] Creating card for event:', event.eventId, 'segments:', event.segments?.length);
+        if (!event || !event.segments || event.segments.length === 0) {
+            console.warn('[VideoCard] Skipping event - no segments:', event);
+            return null;
+        }
         const firstSegment = event.segments[0];
         const card = document.createElement('div');
         card.className = 'video-card';
