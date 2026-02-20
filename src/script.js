@@ -7542,13 +7542,11 @@ class TeslaCamViewer {
                 }
             },
             onDayCreate: (dObj, dStr, fp, dayElem) => {
-                // Highlight dates with available videos in server mode
-                if (availableDates.length > 0) {
-                    const date = dayElem.dateObj;
-                    const dateStr = date.toISOString().split('T')[0];
-                    if (availableDates.includes(dateStr)) {
-                        dayElem.classList.add('has-videos');
-                    }
+                // Only highlight dates that are enabled (not disabled, not prev/next month)
+                if (!dayElem.classList.contains('disabled') && 
+                    !dayElem.classList.contains('prevMonthDay') && 
+                    !dayElem.classList.contains('nextMonthDay')) {
+                    dayElem.classList.add('has-videos');
                 }
             }
         });
