@@ -7504,6 +7504,12 @@ class TeslaCamViewer {
         if (!this.dom.dateFilter) return; // Guard clause
         const lang = this.currentLanguage;
         const translations = i18n[lang];
+        
+        // Get available dates from server mode if enabled
+        const availableDates = window.ServerAPI?.enabled && window.ServerAPI.availableDates 
+            ? window.ServerAPI.availableDates 
+            : [];
+        
         this.flatpickrInstance = flatpickr(this.dom.dateFilter, {
             dateFormat: "Y-m-d",
             locale: this.currentLanguage === 'zh' ? 'zh' : 'default',
@@ -7517,6 +7523,16 @@ class TeslaCamViewer {
                 // Guard clause for onReady
                 if (instance.calendarContainer) {
                     instance.calendarContainer.classList.add('teslacam-flatpickr');
+                }
+            },
+            onDayCreate: (dObj, dStr, fp, dayElem) => {
+                // Highlight dates with available videos in server mode
+                if (availableDates.length > 0) {
+                    const date = dayElem.dateObj;
+                    const dateStr = date.toISOString().split('T')[0];
+                    if (availableDates.includes(dateStr)) {
+                        dayElem.classList.add('has-videos');
+                    }
                 }
             }
         });
@@ -7816,6 +7832,12 @@ class TeslaCamViewer {
             this.eventGroups = events;
             
             this.filterAndRender();
+            
+            // Reinitialize calendar to show highlighted dates
+            if (this.flatpickrInstance) {
+                this.flatpickrInstance.destroy();
+                this.initializeFlatpickr();
+            }
             
             // Update button text to indicate server mode
             this.dom.selectFolderBtn.textContent = '🔄 Reload from Server';
