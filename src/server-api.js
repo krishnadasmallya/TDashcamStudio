@@ -92,12 +92,13 @@ const ServerAPI = {
           const fileName = file.name.toLowerCase();
           let camera = null;
           
+          // Check most specific patterns first
           if (fileName.includes('front')) camera = 'front';
           else if (fileName.includes('back')) camera = 'back';
+          else if (fileName.includes('left_pillar')) camera = 'leftPillar';
+          else if (fileName.includes('right_pillar')) camera = 'rightPillar';
           else if (fileName.includes('left_repeater')) camera = 'left';
           else if (fileName.includes('right_repeater')) camera = 'right';
-          else if (fileName.includes('left')) camera = 'leftPillar';
-          else if (fileName.includes('right')) camera = 'rightPillar';
           
           if (camera) {
             // Create a pseudo-file object that works with getFileUrl
