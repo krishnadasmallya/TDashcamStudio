@@ -50,20 +50,27 @@ const ServerAPI = {
     const structure = await this.getFileStructure();
     if (!structure) return null;
 
+    console.log('[ServerAPI] Raw structure from server:', structure);
+
     // Convert server structure to match client-side format
     const events = [];
     
     for (const [folderType, folders] of Object.entries(structure)) {
       for (const folder of folders) {
+        console.log('[ServerAPI] Processing folder:', folder.name);
+        
         // Parse timestamp from folder name (e.g., "2024-02-20_17-30")
         const timestampMatch = folder.name.match(/(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2})/);
-        let startTime = folder.name;
+        let startTime = folder.name; // Default to folder name
         let eventTimestamp = null;
         
         if (timestampMatch) {
           const [, date, time] = timestampMatch;
           startTime = `${date}_${time}`;
           eventTimestamp = `${date}T${time.replace('-', ':')}:00`;
+          console.log('[ServerAPI] Parsed timestamp:', { startTime, eventTimestamp });
+        } else {
+          console.warn('[ServerAPI] Could not parse timestamp from:', folder.name);
         }
         
         const event = {
@@ -94,10 +101,12 @@ const ServerAPI = {
           };
         }
 
+        console.log('[ServerAPI] Created event:', event);
         events.push(event);
       }
     }
 
+    console.log('[ServerAPI] Total events created:', events.length);
     return events;
   }
 };
