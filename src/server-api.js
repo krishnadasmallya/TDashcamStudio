@@ -93,10 +93,11 @@ const ServerAPI = {
           let camera = null;
           
           // Check most specific patterns first
+          // Use underscore format to match player expectations
           if (fileName.includes('front')) camera = 'front';
           else if (fileName.includes('back')) camera = 'back';
-          else if (fileName.includes('left_pillar')) camera = 'leftPillar';
-          else if (fileName.includes('right_pillar')) camera = 'rightPillar';
+          else if (fileName.includes('left_pillar')) camera = 'left_pillar';
+          else if (fileName.includes('right_pillar')) camera = 'right_pillar';
           else if (fileName.includes('left_repeater')) camera = 'left';
           else if (fileName.includes('right_repeater')) camera = 'right';
           
