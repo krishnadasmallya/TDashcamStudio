@@ -7183,10 +7183,10 @@ class TeslaCamViewer {
         this.allFiles = [];
         this.eventGroups = [];
         this.currentEvent = null;
-        this.currentLanguage = 'zh';
+        this.currentLanguage = 'en';
         this.currentMapCoordinates = null;
         this.flatpickrInstance = null;
-        this.videoClipProcessor = new VideoClipProcessor();
+        this.videoClipProcessor = new VideoClipProcessor(this);
         this.metadataManager = new MetadataManager(this);
         this.dom = {
             folderInput: document.getElementById('folderInput'),
