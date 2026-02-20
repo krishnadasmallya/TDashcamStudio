@@ -7,17 +7,24 @@ const ServerAPI = {
 
   async init() {
     // Check if server mode is available
+    console.log('[ServerAPI] Checking for server mode...');
     try {
       const response = await fetch('/api/files');
+      console.log('[ServerAPI] API response status:', response.status);
       if (response.ok) {
+        const data = await response.json();
+        console.log('[ServerAPI] API returned data:', data);
         this.enabled = true;
         this.baseUrl = window.location.origin;
-        console.log('Server mode enabled');
+        console.log('[ServerAPI] ✅ Server mode enabled');
         return true;
+      } else {
+        console.log('[ServerAPI] API returned non-OK status:', response.status);
       }
     } catch (error) {
-      console.log('Server mode not available, using client mode');
+      console.log('[ServerAPI] ❌ Server mode not available:', error.message);
     }
+    console.log('[ServerAPI] Falling back to client mode');
     return false;
   },
 
