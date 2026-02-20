@@ -7519,6 +7519,7 @@ class TeslaCamViewer {
             dateFormat: "Y-m-d",
             locale: this.currentLanguage === 'zh' ? 'zh' : 'default',
             placeholder: translations.selectDate,
+            inline: true, // Always show calendar
             disableMobile: true, // Force flatpickr on mobile instead of native picker
             onChange: (selectedDates, dateStr, instance) => {
                 this.filterAndRender();
