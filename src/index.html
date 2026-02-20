@@ -24,13 +24,6 @@
             </div>
             <div class="filters">
                 <div class="filter-group">
-                    <label for="dateFilter">日期</label>
-                    <div class="date-input-wrapper">
-                        <input type="text" id="dateFilter" placeholder="选择日期">
-                        <button type="button" id="clearDateBtn" class="clear-date-btn" title="清除日期">&times;</button>
-                    </div>
-                </div>
-                <div class="filter-group">
                     <label for="eventFilter">事件类型</label>
                     <select id="eventFilter">
                         <option value="">所有类型</option>
@@ -38,6 +31,10 @@
                         <option value="SavedClips">保存片段</option>
                         <option value="SentryClips">哨兵模式</option>
                     </select>
+                </div>
+                <div class="filter-group" id="dateListContainer">
+                    <label>可用日期</label>
+                    <div id="dateList" class="date-list"></div>
                 </div>
             </div>
             <div id="fileList" class="file-list">

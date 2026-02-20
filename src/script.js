@@ -7192,6 +7192,8 @@ class TeslaCamViewer {
             selectFolderBtn: document.getElementById('selectFolderBtn'),
             dateFilter: document.getElementById('dateFilter'),
             clearDateBtn: document.getElementById('clearDateBtn'),
+            dateList: document.getElementById('dateList'),
+            dateListContainer: document.getElementById('dateListContainer'),
             eventFilter: document.getElementById('eventFilter'),
             sidebar: document.querySelector('.sidebar'),
             toggleSidebarBtn: document.getElementById('toggleSidebarBtn'),
@@ -7385,8 +7387,11 @@ class TeslaCamViewer {
 
         this.dom.eventFilter.addEventListener('change', () => {
             this.filterAndRender();
-            // Refresh calendar highlighting when filter changes in server mode
-            if (window.ServerAPI?.enabled && this.flatpickrInstance) {
+            // Refresh date list when filter changes in server mode
+            if (window.ServerAPI?.enabled) {
+                this.selectedDate = null;
+                this.renderDateList();
+            } else if (this.flatpickrInstance) {
                 this.flatpickrInstance.destroy();
                 this.initializeFlatpickr();
             }
@@ -7508,54 +7513,78 @@ class TeslaCamViewer {
     }
 
     initializeFlatpickr() {
-        if (!this.dom.dateFilter) return; // Guard clause
+        // In server mode, use date list instead of calendar
+        if (window.ServerAPI?.enabled) {
+            this.renderDateList();
+            return;
+        }
+        
+        // Client mode: use flatpickr calendar
+        if (!this.dom.dateFilter) return;
         const lang = this.currentLanguage;
         const translations = i18n[lang];
-        
-        // Get available dates based on current event type filter
-        const availableDates = this.getAvailableDatesForCurrentFilter();
         
         this.flatpickrInstance = flatpickr(this.dom.dateFilter, {
             dateFormat: "Y-m-d",
             locale: this.currentLanguage === 'zh' ? 'zh' : 'default',
             placeholder: translations.selectDate,
-            inline: true, // Always show calendar
-            disableMobile: true, // Force flatpickr on mobile instead of native picker
-            appendTo: this.dom.dateFilter.parentElement, // Append to date-input-wrapper
-            enable: availableDates.length > 0 ? availableDates : undefined, // Only enable dates with videos
+            disableMobile: true,
             onChange: (selectedDates, dateStr, instance) => {
-                // Ensure the input value is set even though it's hidden
-                if (this.dom.dateFilter) {
-                    this.dom.dateFilter.value = dateStr;
-                }
                 this.filterAndRender();
                 this.updateClearDateButton();
             },
             onReady: (selectedDates, dateStr, instance) => {
-                // Guard clause for onReady
                 if (instance.calendarContainer) {
                     instance.calendarContainer.classList.add('teslacam-flatpickr');
-                }
-                // Hide the input field when inline
-                if (this.dom.dateFilter) {
-                    this.dom.dateFilter.style.display = 'none';
-                }
-            },
-            onDayCreate: (dObj, dStr, fp, dayElem) => {
-                // Only highlight dates that are enabled (not disabled, not prev/next month)
-                if (!dayElem.classList.contains('disabled') && 
-                    !dayElem.classList.contains('prevMonthDay') && 
-                    !dayElem.classList.contains('nextMonthDay')) {
-                    dayElem.classList.add('has-videos');
                 }
             }
         });
         
-        // Initialize clear date button
         if (this.dom.clearDateBtn) {
             this.dom.clearDateBtn.addEventListener('click', () => this.clearDateFilter());
             this.updateClearDateButton();
         }
+    }
+    
+    renderDateList() {
+        if (!this.dom.dateList || !this.dom.dateListContainer) return;
+        
+        const availableDates = this.getAvailableDatesForCurrentFilter();
+        
+        if (availableDates.length === 0) {
+            this.dom.dateListContainer.classList.remove('visible');
+            return;
+        }
+        
+        this.dom.dateListContainer.classList.add('visible');
+        this.dom.dateList.innerHTML = '';
+        
+        // Sort dates descending (newest first)
+        const sortedDates = [...availableDates].sort().reverse();
+        
+        sortedDates.forEach(date => {
+            const item = document.createElement('div');
+            item.className = 'date-list-item';
+            item.textContent = date;
+            item.dataset.date = date;
+            
+            item.addEventListener('click', () => {
+                // Toggle selection
+                const wasActive = item.classList.contains('active');
+                document.querySelectorAll('.date-list-item').forEach(i => i.classList.remove('active'));
+                
+                if (!wasActive) {
+                    item.classList.add('active');
+                    this.selectedDate = date;
+                } else {
+                    this.selectedDate = null;
+                }
+                
+                this.filterAndRender();
+            });
+            
+            this.dom.dateList.appendChild(item);
+        });
     }
     
     getAvailableDatesForCurrentFilter() {
@@ -7868,11 +7897,8 @@ class TeslaCamViewer {
             
             this.filterAndRender();
             
-            // Reinitialize calendar to show highlighted dates
-            if (this.flatpickrInstance) {
-                this.flatpickrInstance.destroy();
-                this.initializeFlatpickr();
-            }
+            // Render date list
+            this.renderDateList();
             
             // Update button text to indicate server mode
             this.dom.selectFolderBtn.textContent = '🔄 Reload from Server';
@@ -8022,7 +8048,7 @@ class TeslaCamViewer {
     }
 
     filterAndRender() {
-        const dateFilter = this.dom.dateFilter.value;
+        const dateFilter = window.ServerAPI?.enabled ? this.selectedDate : this.dom.dateFilter?.value;
         const eventFilter = this.dom.eventFilter.value;
         const filteredEvents = this.eventGroups.filter(event => 
             (!dateFilter || event.startTime.startsWith(dateFilter)) && 
