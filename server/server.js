@@ -55,20 +55,34 @@ app.get('/api/dates', async (req, res) => {
       cacheTimestamp = now;
     }
     
-    // Extract unique dates from all events
-    const dates = new Set();
+    // Extract dates per event type
+    const datesByType = {
+      RecentClips: new Set(),
+      SavedClips: new Set(),
+      SentryClips: new Set(),
+      all: new Set()
+    };
     
     for (const folder of Object.keys(fileStructureCache)) {
       for (const event of fileStructureCache[folder]) {
         const match = event.name.match(/(\d{4}-\d{2}-\d{2})/);
         if (match) {
-          dates.add(match[1]);
+          const date = match[1];
+          datesByType.all.add(date);
+          if (datesByType[folder]) {
+            datesByType[folder].add(date);
+          }
         }
       }
     }
     
     res.json({
-      dates: Array.from(dates).sort(),
+      dates: {
+        all: Array.from(datesByType.all).sort(),
+        RecentClips: Array.from(datesByType.RecentClips).sort(),
+        SavedClips: Array.from(datesByType.SavedClips).sort(),
+        SentryClips: Array.from(datesByType.SentryClips).sort()
+      },
       cacheAge: now - cacheTimestamp
     });
   } catch (error) {

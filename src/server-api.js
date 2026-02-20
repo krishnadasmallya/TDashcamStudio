@@ -4,7 +4,12 @@
 const ServerAPI = {
   enabled: false,
   baseUrl: '',
-  availableDates: [],
+  availableDates: {
+    all: [],
+    RecentClips: [],
+    SavedClips: [],
+    SentryClips: []
+  },
 
   async init() {
     // Check if server mode is available
@@ -39,7 +44,12 @@ const ServerAPI = {
       if (response.ok) {
         const data = await response.json();
         this.availableDates = data.dates;
-        console.log('[ServerAPI] Available dates:', this.availableDates.length);
+        console.log('[ServerAPI] Available dates by type:', {
+          all: this.availableDates.all.length,
+          RecentClips: this.availableDates.RecentClips.length,
+          SavedClips: this.availableDates.SavedClips.length,
+          SentryClips: this.availableDates.SentryClips.length
+        });
       }
     } catch (error) {
       console.warn('[ServerAPI] Could not fetch dates:', error);

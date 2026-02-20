@@ -7383,7 +7383,14 @@ class TeslaCamViewer {
             }
         }
 
-        this.dom.eventFilter.addEventListener('change', () => this.filterAndRender());
+        this.dom.eventFilter.addEventListener('change', () => {
+            this.filterAndRender();
+            // Refresh calendar highlighting when filter changes in server mode
+            if (window.ServerAPI?.enabled && this.flatpickrInstance) {
+                this.flatpickrInstance.destroy();
+                this.initializeFlatpickr();
+            }
+        });
         this.dom.toggleSidebarBtn.addEventListener('click', () => this.toggleSidebar());
         if (this.dom.openSidebarBtn) {
             this.dom.openSidebarBtn.addEventListener('click', () => this.toggleSidebar(true));
@@ -7505,10 +7512,8 @@ class TeslaCamViewer {
         const lang = this.currentLanguage;
         const translations = i18n[lang];
         
-        // Get available dates from server mode if enabled
-        const availableDates = window.ServerAPI?.enabled && window.ServerAPI.availableDates 
-            ? window.ServerAPI.availableDates 
-            : [];
+        // Get available dates based on current event type filter
+        const availableDates = this.getAvailableDatesForCurrentFilter();
         
         this.flatpickrInstance = flatpickr(this.dom.dateFilter, {
             dateFormat: "Y-m-d",
@@ -7542,6 +7547,26 @@ class TeslaCamViewer {
             this.dom.clearDateBtn.addEventListener('click', () => this.clearDateFilter());
             this.updateClearDateButton();
         }
+    }
+    
+    getAvailableDatesForCurrentFilter() {
+        if (!window.ServerAPI?.enabled || !window.ServerAPI.availableDates) {
+            return [];
+        }
+        
+        const eventType = this.dom.eventTypeFilter?.value || 'all';
+        
+        if (eventType === 'all') {
+            return window.ServerAPI.availableDates.all || [];
+        } else if (eventType === 'recent') {
+            return window.ServerAPI.availableDates.RecentClips || [];
+        } else if (eventType === 'saved') {
+            return window.ServerAPI.availableDates.SavedClips || [];
+        } else if (eventType === 'sentry') {
+            return window.ServerAPI.availableDates.SentryClips || [];
+        }
+        
+        return [];
     }
     
     clearDateFilter() {
