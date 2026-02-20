@@ -246,6 +246,12 @@ async function getTempDir() {
 }
 
 function getFileUrl(file) {
+    // Server mode: use server URL if available
+    if (file.url && file.serverPath) {
+        console.log('[getFileUrl] Server mode - using URL:', file.url);
+        return file.url;
+    }
+    
     const tauri = getTauri();
     if (tauri && file.path) {
         // Tauri 2: use core.convertFileSrc
@@ -7285,6 +7291,12 @@ class TeslaCamViewer {
             e.preventDefault();
             e.stopPropagation();
             
+            // Check if server mode is available and enabled
+            if (window.ServerAPI && window.ServerAPI.enabled) {
+                await this.loadServerModeFiles();
+                return;
+            }
+            
             // Tauri 环境下使用 dialog API 选择目录
             if (this.isTauri) {
                 await this.selectTauriDirectory();
@@ -7765,6 +7777,43 @@ class TeslaCamViewer {
             console.warn(`Error scanning ${currentPath}:`, e);
         }
         return files;
+    }
+
+    async loadServerModeFiles() {
+        console.log('[Server Mode] Loading files from server...');
+        
+        // Clean up old data
+        this.cleanupOldData();
+        
+        try {
+            const events = await window.ServerAPI.loadServerFiles();
+            
+            if (!events || events.length === 0) {
+                alert('No TeslaCam files found on server');
+                this.showInitialHelpMessage();
+                return;
+            }
+            
+            console.log('[Server Mode] Loaded events:', events.length);
+            
+            // Convert server events to the format expected by the app
+            this.eventGroups = events.map(event => ({
+                id: `${event.type}-${event.name}`,
+                name: event.name,
+                type: event.type,
+                files: event.files,
+                serverMode: true
+            }));
+            
+            this.filterAndRender();
+            
+            // Update button text to indicate server mode
+            this.dom.selectFolderBtn.textContent = '🔄 Reload Server Files';
+            
+        } catch (error) {
+            console.error('[Server Mode] Error loading files:', error);
+            alert('Failed to load files from server: ' + error.message);
+        }
     }
 
     async handleFolderSelection(files) {
@@ -9789,9 +9838,18 @@ function preloadFonts() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
         preloadFonts();
+        
+        // Check if server mode is available
+        if (window.ServerAPI) {
+            const serverAvailable = await window.ServerAPI.init();
+            if (serverAvailable) {
+                console.log('Server mode detected and enabled');
+            }
+        }
+        
         window.viewer = new TeslaCamViewer();
         window.addEventListener('beforeunload', () => { if (window.viewer) window.viewer.destroy(); });
         console.log('TDashcam Studio Initialized');
