@@ -8,6 +8,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const TESLACAM_PATH = process.env.TESLACAM_PATH || '/teslacam';
 
+// Cache for file structure
+let fileStructureCache = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 app.use(cors());
 app.use(express.json());
 
@@ -17,10 +22,70 @@ app.use(express.static('../src'));
 // API endpoint to list directory structure
 app.get('/api/files', async (req, res) => {
   try {
+    const now = Date.now();
+    
+    // Return cached data if still valid
+    if (fileStructureCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+      console.log('Returning cached file structure');
+      return res.json(fileStructureCache);
+    }
+    
+    console.log('Scanning directory structure...');
     const structure = await scanTeslaCamDirectory(TESLACAM_PATH);
+    
+    // Update cache
+    fileStructureCache = structure;
+    cacheTimestamp = now;
+    
     res.json(structure);
   } catch (error) {
     console.error('Error scanning directory:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API endpoint to get available dates
+app.get('/api/dates', async (req, res) => {
+  try {
+    const now = Date.now();
+    
+    // Ensure cache is populated
+    if (!fileStructureCache || !cacheTimestamp || (now - cacheTimestamp >= CACHE_DURATION)) {
+      fileStructureCache = await scanTeslaCamDirectory(TESLACAM_PATH);
+      cacheTimestamp = now;
+    }
+    
+    // Extract unique dates from all events
+    const dates = new Set();
+    
+    for (const folder of Object.keys(fileStructureCache)) {
+      for (const event of fileStructureCache[folder]) {
+        const match = event.name.match(/(\d{4}-\d{2}-\d{2})/);
+        if (match) {
+          dates.add(match[1]);
+        }
+      }
+    }
+    
+    res.json({
+      dates: Array.from(dates).sort(),
+      cacheAge: now - cacheTimestamp
+    });
+  } catch (error) {
+    console.error('Error getting dates:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API endpoint to invalidate cache
+app.post('/api/refresh', async (req, res) => {
+  try {
+    console.log('Refreshing cache...');
+    fileStructureCache = await scanTeslaCamDirectory(TESLACAM_PATH);
+    cacheTimestamp = Date.now();
+    res.json({ success: true, message: 'Cache refreshed' });
+  } catch (error) {
+    console.error('Error refreshing cache:', error);
     res.status(500).json({ error: error.message });
   }
 });

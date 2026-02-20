@@ -4,6 +4,7 @@
 const ServerAPI = {
   enabled: false,
   baseUrl: '',
+  availableDates: [],
 
   async init() {
     // Check if server mode is available
@@ -16,6 +17,10 @@ const ServerAPI = {
         console.log('[ServerAPI] API returned data:', data);
         this.enabled = true;
         this.baseUrl = window.location.origin;
+        
+        // Fetch available dates
+        await this.fetchAvailableDates();
+        
         console.log('[ServerAPI] ✅ Server mode enabled');
         return true;
       } else {
@@ -25,6 +30,32 @@ const ServerAPI = {
       console.log('[ServerAPI] ❌ Server mode not available:', error.message);
     }
     console.log('[ServerAPI] Falling back to client mode');
+    return false;
+  },
+
+  async fetchAvailableDates() {
+    try {
+      const response = await fetch('/api/dates');
+      if (response.ok) {
+        const data = await response.json();
+        this.availableDates = data.dates;
+        console.log('[ServerAPI] Available dates:', this.availableDates.length);
+      }
+    } catch (error) {
+      console.warn('[ServerAPI] Could not fetch dates:', error);
+    }
+  },
+
+  async refreshCache() {
+    try {
+      const response = await fetch('/api/refresh', { method: 'POST' });
+      if (response.ok) {
+        await this.fetchAvailableDates();
+        return true;
+      }
+    } catch (error) {
+      console.error('[ServerAPI] Refresh failed:', error);
+    }
     return false;
   },
 

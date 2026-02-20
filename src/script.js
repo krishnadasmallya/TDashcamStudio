@@ -7297,7 +7297,19 @@ class TeslaCamViewer {
             
             // Check if server mode is available and enabled
             if (window.ServerAPI && window.ServerAPI.enabled) {
-                await this.loadServerModeFiles();
+                // In server mode, this button refreshes from server
+                this.dom.selectFolderBtn.disabled = true;
+                this.dom.selectFolderBtn.textContent = '🔄 Refreshing...';
+                
+                const refreshed = await window.ServerAPI.refreshCache();
+                if (refreshed) {
+                    await this.loadServerModeFiles();
+                } else {
+                    alert('Failed to refresh from server');
+                }
+                
+                this.dom.selectFolderBtn.disabled = false;
+                this.dom.selectFolderBtn.textContent = '🔄 Reload from Server';
                 return;
             }
             
@@ -7806,7 +7818,7 @@ class TeslaCamViewer {
             this.filterAndRender();
             
             // Update button text to indicate server mode
-            this.dom.selectFolderBtn.textContent = '🔄 Reload Server Files';
+            this.dom.selectFolderBtn.textContent = '🔄 Reload from Server';
             
         } catch (error) {
             console.error('[Server Mode] Error loading files:', error);
@@ -9841,14 +9853,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         preloadFonts();
         
         // Check if server mode is available
+        let serverModeEnabled = false;
         if (window.ServerAPI) {
-            const serverAvailable = await window.ServerAPI.init();
-            if (serverAvailable) {
+            serverModeEnabled = await window.ServerAPI.init();
+            if (serverModeEnabled) {
                 console.log('Server mode detected and enabled');
             }
         }
         
         window.viewer = new TeslaCamViewer();
+        
+        // Auto-load files in server mode
+        if (serverModeEnabled) {
+            console.log('[Init] Auto-loading files from server...');
+            await window.viewer.loadServerModeFiles();
+        }
+        
         window.addEventListener('beforeunload', () => { if (window.viewer) window.viewer.destroy(); });
         console.log('TDashcam Studio Initialized');
     } catch (error) {
