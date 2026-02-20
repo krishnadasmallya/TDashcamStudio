@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  tdashcam-server:
+    # For local builds, use: tdashcam-server:latest
+    # For GitHub builds, use: ghcr.io/krishnadasmallya/tdashcamstudio:feature-server-mode
+    image: tdashcam-server:latest
+    container_name: tdashcam-server
+    ports:
+      - "8188:80"
+    volumes:
+      - /mnt/your-pool/TeslaCam:/teslacam:ro
+    environment:
+      - TZ=Australia/Sydney
+      - TESLACAM_PATH=/teslacam
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - tdashcam-network
+
+networks:
+  tdashcam-network:
+    driver: bridge
