@@ -1735,8 +1735,8 @@ class MetadataManager {
                 buffer = await file.arrayBuffer();
             } else if (file instanceof TauriFile) {
                 buffer = await file.arrayBuffer();
-            } else if (file && file.path) {
-                // If it's a file-like object but not instance of File/TauriFile
+            } else if (file && (file.url || file.path || file.serverPath)) {
+                // Server mode or file-like object
                 const response = await fetch(getFileUrl(file));
                 buffer = await response.arrayBuffer();
             } else {

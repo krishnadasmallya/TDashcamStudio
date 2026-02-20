@@ -100,10 +100,14 @@ const ServerAPI = {
           else if (fileName.includes('right')) camera = 'rightPillar';
           
           if (camera) {
+            // Create a pseudo-file object that works with getFileUrl
             segment.files[camera] = {
               name: file.name,
               url: file.url,
-              serverPath: file.path
+              serverPath: file.path,
+              // Add properties that make it work like a File object
+              size: 0,
+              type: 'video/mp4'
             };
           }
         }
