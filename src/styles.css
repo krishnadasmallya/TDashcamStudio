@@ -2246,9 +2246,18 @@ body:not(.dark-theme) .stats-overlay {
     max-width: 100%;
 }
 
-/* Hide the input when inline */
-.date-input-wrapper .flatpickr-input.inline {
+/* Hide the input and wrapper when inline calendar is active */
+.date-input-wrapper:has(+ .flatpickr-calendar.inline) {
     display: none;
+}
+
+/* Alternative: hide input directly when it has inline class */
+#dateFilter.flatpickr-input {
+    display: none;
+}
+
+.filter-group:has(.flatpickr-calendar.inline) label {
+    margin-bottom: 0;
 }
 
 .flatpickr-months .flatpickr-month,
