@@ -8598,11 +8598,12 @@ class TeslaCamViewer {
 
     loadLanguage() {
         const savedLang = localStorage.getItem('language');
-        let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
         if (savedLang) {
-            lang = savedLang;
+            this.setLanguage(savedLang);
+        } else {
+            // Use the default language set in constructor (en)
+            this.setLanguage(this.currentLanguage);
         }
-        this.setLanguage(lang);
     }
 
     /**
