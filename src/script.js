@@ -7522,6 +7522,7 @@ class TeslaCamViewer {
             inline: true, // Always show calendar
             disableMobile: true, // Force flatpickr on mobile instead of native picker
             appendTo: this.dom.dateFilter.parentElement, // Append to date-input-wrapper
+            enable: availableDates.length > 0 ? availableDates : undefined, // Only enable dates with videos
             onChange: (selectedDates, dateStr, instance) => {
                 // Ensure the input value is set even though it's hidden
                 if (this.dom.dateFilter) {
