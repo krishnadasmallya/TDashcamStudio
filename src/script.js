@@ -7523,6 +7523,10 @@ class TeslaCamViewer {
             disableMobile: true, // Force flatpickr on mobile instead of native picker
             appendTo: this.dom.dateFilter.parentElement, // Append to date-input-wrapper
             onChange: (selectedDates, dateStr, instance) => {
+                // Ensure the input value is set even though it's hidden
+                if (this.dom.dateFilter) {
+                    this.dom.dateFilter.value = dateStr;
+                }
                 this.filterAndRender();
                 this.updateClearDateButton();
             },
