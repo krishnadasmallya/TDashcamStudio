@@ -7,6 +7,7 @@
         toggleLanguage: "切换到中文",
         drivingRecords: "Driving Records",
         date: "Date",
+        availableDates: "Available Dates",
         eventType: "Event Type",
         allTypes: "📂 All Types",
         recentClips: "🕒 Recent Clips",
@@ -116,6 +117,7 @@
         toggleLanguage: "Switch to English",
         drivingRecords: "行车记录",
         date: "日期",
+        availableDates: "可用日期",
         eventType: "事件类型",
         allTypes: "🎥 所有类型",
         recentClips: "🕒 最近片段",
@@ -8977,7 +8979,19 @@ class TeslaCamViewer {
         }
 
         document.querySelector('.sidebar-header .header-title span').textContent = translations.headerTitle;
-        document.querySelector('.filter-group label[for="dateFilter"]').textContent = translations.date;
+        
+        // Update date label if it exists (client mode)
+        const dateLabelEl = document.querySelector('.filter-group label[for="dateFilter"]');
+        if (dateLabelEl) {
+            dateLabelEl.textContent = translations.date;
+        }
+        
+        // Update date list label if it exists (server mode)
+        const dateListLabelEl = document.querySelector('#dateListContainer label');
+        if (dateListLabelEl) {
+            dateListLabelEl.textContent = translations.availableDates || '可用日期';
+        }
+        
         document.querySelector('.filter-group label[for="eventFilter"]').textContent = translations.eventType;
         document.querySelector('#eventFilter option[value=""]').textContent = translations.allTypes;
         document.querySelector('#eventFilter option[value="RecentClips"]').textContent = translations.recentClips;
