@@ -71,25 +71,59 @@ async function scanTeslaCamDirectory(basePath) {
     try {
       const entries = await readdir(folderPath, { withFileTypes: true });
       
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const eventPath = join(folderPath, entry.name);
-          const files = await readdir(eventPath);
-          const videoFiles = files.filter(f => 
-            f.endsWith('.mp4') || f.endsWith('.mov')
-          );
-          
-          if (videoFiles.length > 0) {
-            structure[folder].push({
-              name: entry.name,
-              path: `${folder}/${entry.name}`,
-              files: videoFiles.map(f => ({
-                name: f,
-                path: `${folder}/${entry.name}/${f}`,
-                url: `/api/video/${folder}/${entry.name}/${f}`
-              }))
-            });
+      // Check if files are directly in the folder (RecentClips style)
+      const directVideoFiles = entries.filter(e => 
+        e.isFile() && (e.name.endsWith('.mp4') || e.name.endsWith('.mov'))
+      );
+      
+      if (directVideoFiles.length > 0) {
+        // Group files by timestamp (e.g., "2026-02-20_11-14")
+        const fileGroups = new Map();
+        
+        for (const file of directVideoFiles) {
+          const match = file.name.match(/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})/);
+          if (match) {
+            const timestamp = match[1];
+            if (!fileGroups.has(timestamp)) {
+              fileGroups.set(timestamp, []);
+            }
+            fileGroups.get(timestamp).push(file.name);
           }
+        }
+        
+        // Create events from grouped files
+        for (const [timestamp, files] of fileGroups) {
+          structure[folder].push({
+            name: timestamp,
+            path: folder,
+            files: files.map(f => ({
+              name: f,
+              path: `${folder}/${f}`,
+              url: `/api/video/${folder}/${f}`
+            }))
+          });
+        }
+      }
+      
+      // Also check for subdirectories (SavedClips/SentryClips style)
+      const subdirs = entries.filter(e => e.isDirectory());
+      for (const entry of subdirs) {
+        const eventPath = join(folderPath, entry.name);
+        const files = await readdir(eventPath);
+        const videoFiles = files.filter(f => 
+          f.endsWith('.mp4') || f.endsWith('.mov')
+        );
+        
+        if (videoFiles.length > 0) {
+          structure[folder].push({
+            name: entry.name,
+            path: `${folder}/${entry.name}`,
+            files: videoFiles.map(f => ({
+              name: f,
+              path: `${folder}/${entry.name}/${f}`,
+              url: `/api/video/${folder}/${entry.name}/${f}`
+            }))
+          });
         }
       }
     } catch (error) {
