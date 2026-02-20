@@ -2294,17 +2294,19 @@ span.flatpickr-weekday {
 .flatpickr-day.disabled,
 .flatpickr-day.disabled:hover {
     color: var(--text-secondary);
-    opacity: 0.5;
+    opacity: 0.3;
     background: transparent;
+    cursor: not-allowed;
 }
 
-/* Highlight dates with available videos */
-.flatpickr-day.has-videos {
+/* Style enabled dates (dates with videos) */
+.flatpickr-day:not(.disabled):not(.nextMonthDay):not(.prevMonthDay) {
     position: relative;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
-.flatpickr-day.has-videos::after {
+.flatpickr-day:not(.disabled):not(.nextMonthDay):not(.prevMonthDay)::after {
     content: '';
     position: absolute;
     bottom: 2px;
@@ -2316,13 +2318,13 @@ span.flatpickr-weekday {
     background-color: var(--bg-button);
 }
 
-.flatpickr-day.has-videos.selected::after,
-.flatpickr-day.has-videos.startRange::after,
-.flatpickr-day.has-videos.endRange::after {
+.flatpickr-day.selected:not(.disabled)::after,
+.flatpickr-day.startRange:not(.disabled)::after,
+.flatpickr-day.endRange:not(.disabled)::after {
     background-color: var(--text-on-button);
 }
 
-.flatpickr-months .flatpickr-prev-month,
+/* Remove old has-videos styles */.flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
     fill: var(--text-primary);
 }
