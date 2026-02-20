@@ -25,3 +25,8 @@ Thumbs.db
 *.swp
 *.swo
 .env
+
+# Server mode
+test-teslacam/
+docker-compose.yml
+server/node_modules/
