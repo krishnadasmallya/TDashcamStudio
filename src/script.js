@@ -7799,8 +7799,12 @@ class TeslaCamViewer {
             // Convert server events to the format expected by the app
             this.eventGroups = events.map(event => ({
                 id: `${event.type}-${event.name}`,
+                eventId: `${event.type}-${event.name}`,
                 name: event.name,
                 type: event.type,
+                eventType: event.type,
+                startTime: event.startTime,
+                eventTimestamp: event.eventTimestamp,
                 files: event.files,
                 serverMode: true
             }));
