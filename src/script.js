@@ -7530,6 +7530,14 @@ class TeslaCamViewer {
                 if (instance.calendarContainer) {
                     instance.calendarContainer.classList.add('teslacam-flatpickr');
                 }
+                // Hide the input field when inline
+                if (this.dom.dateFilter) {
+                    this.dom.dateFilter.style.display = 'none';
+                    const wrapper = this.dom.dateFilter.closest('.date-input-wrapper');
+                    if (wrapper) {
+                        wrapper.style.display = 'none';
+                    }
+                }
             },
             onDayCreate: (dObj, dStr, fp, dayElem) => {
                 // Highlight dates with available videos in server mode
