@@ -55,9 +55,22 @@ const ServerAPI = {
     
     for (const [folderType, folders] of Object.entries(structure)) {
       for (const folder of folders) {
+        // Parse timestamp from folder name (e.g., "2024-02-20_17-30")
+        const timestampMatch = folder.name.match(/(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2})/);
+        let startTime = folder.name;
+        let eventTimestamp = null;
+        
+        if (timestampMatch) {
+          const [, date, time] = timestampMatch;
+          startTime = `${date}_${time}`;
+          eventTimestamp = `${date}T${time.replace('-', ':')}:00`;
+        }
+        
         const event = {
           name: folder.name,
           type: folderType,
+          startTime: startTime,
+          eventTimestamp: eventTimestamp,
           files: {},
           serverMode: true
         };
