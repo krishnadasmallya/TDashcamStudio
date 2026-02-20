@@ -7521,6 +7521,7 @@ class TeslaCamViewer {
             placeholder: translations.selectDate,
             inline: true, // Always show calendar
             disableMobile: true, // Force flatpickr on mobile instead of native picker
+            appendTo: this.dom.dateFilter.parentElement, // Append to date-input-wrapper
             onChange: (selectedDates, dateStr, instance) => {
                 this.filterAndRender();
                 this.updateClearDateButton();
@@ -7533,10 +7534,6 @@ class TeslaCamViewer {
                 // Hide the input field when inline
                 if (this.dom.dateFilter) {
                     this.dom.dateFilter.style.display = 'none';
-                    const wrapper = this.dom.dateFilter.closest('.date-input-wrapper');
-                    if (wrapper) {
-                        wrapper.style.display = 'none';
-                    }
                 }
             },
             onDayCreate: (dObj, dStr, fp, dayElem) => {
