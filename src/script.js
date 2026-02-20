@@ -7560,15 +7560,16 @@ class TeslaCamViewer {
             return [];
         }
         
-        const eventType = this.dom.eventFilter?.value || 'all';
+        const eventType = this.dom.eventFilter?.value || '';
         
-        if (eventType === 'all') {
+        // Empty string means "all"
+        if (eventType === '' || eventType === 'all') {
             return window.ServerAPI.availableDates.all || [];
-        } else if (eventType === 'recent') {
+        } else if (eventType === 'RecentClips') {
             return window.ServerAPI.availableDates.RecentClips || [];
-        } else if (eventType === 'saved') {
+        } else if (eventType === 'SavedClips') {
             return window.ServerAPI.availableDates.SavedClips || [];
-        } else if (eventType === 'sentry') {
+        } else if (eventType === 'SentryClips') {
             return window.ServerAPI.availableDates.SentryClips || [];
         }
         
