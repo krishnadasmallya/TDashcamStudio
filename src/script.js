@@ -7554,7 +7554,7 @@ class TeslaCamViewer {
             return [];
         }
         
-        const eventType = this.dom.eventTypeFilter?.value || 'all';
+        const eventType = this.dom.eventFilter?.value || 'all';
         
         if (eventType === 'all') {
             return window.ServerAPI.availableDates.all || [];
